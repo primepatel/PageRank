@@ -1,0 +1,59 @@
+\documentclass{primedoc}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta}
+\usepackage{microtype}
+\usepackage{booktabs}
+\usepackage{minted}
+\setminted{style=friendly,fontsize=\small}
+\renewcommand{\listoflistingscaption}{List of Code Listings}
+\usepackage{hyperref}  % for hyperlinks
+\usepackage[a4paper,top=4.2cm,bottom=4.2cm,left=3.5cm,right=3.5cm]{geometry} % for setting page size and margins
+
+
+\usepackage[framemethod=TikZ]{mdframed}
+\newcounter{thm}[section]\setcounter{thm}{0}
+\renewcommand{\thethm}{\arabic{section}.\arabic{thm}}
+\newenvironment{thm}[2][]{%
+\refstepcounter{thm}%
+\ifstrempty{#1}%
+{\mdfsetup{%
+frametitle={%
+\tikz[baseline=(current bounding box.east),outer sep=0pt]
+\node[anchor=east,rectangle,fill=blue!20]
+{\strut Theorem~\thethm};}}
+}%
+{\mdfsetup{%
+frametitle={%
+\tikz[baseline=(current bounding box.east),outer sep=0pt]
+\node[anchor=east,rectangle,fill=cyan!20]
+{\strut Theorem~\thethm:~#1};}}%
+}%
+\mdfsetup{innertopmargin=10pt,linecolor=blue!20,%
+linewidth=2pt,topline=true,%
+frametitleaboveskip=\dimexpr-\ht\strutbox\relax
+}
+\begin{mdframed}[]\relax%
+\label{#2}}{\end{mdframed}}
+
+
+% Custom macros used in this example document
+\newcommand{\doclink}[2]{\href{#1}{#2}\footnote{\url{#1}}}
+\newcommand{\cs}[1]{\texttt{\textbackslash #1}}
+
+% Frontmatter data; appears on title page
+\title{Google PageRank Algorithm}
+\subtitle{An Application of Linear Algebra}
+\author{Manish Patel}
+\softwarelogo{\includegraphics[width=8cm]{img}}
+\begin{document}
+\maketitle
+\newpage
+~\vfill
+\thispagestyle{empty}
+\noindent \copyright\ Manish Patel\\ % Copyright notice
+\noindent \textsc{The Institute of Science, Mumbai}\\ % Publisher	
+\noindent \textit{primespatel@gmail.com}\\ % URL	
+\noindent \textit{2021-22}
+\end{document}
