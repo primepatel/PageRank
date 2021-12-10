@@ -1,0 +1,152 @@
+\section{PageRank Algorithm}
+We are interested in calculating PageRank before calculating it, we need to know about the topology of the web.\\
+\\
+In order to do that, we need to view the Web as a graph. The Web's hyperlink structure forms a massive directed graph. The nodes in the graph represent webpages and the directed arcs or links represent the hyperlinks. Thus, hyperlinks into a page, which are called inlinks, point into nodes, while outlinks point out from nodes. Nodes with no outlinks are known as dangling node. We will see how it causes the PageRank.\\
+	
+\begin{center}
+\begin{tikzpicture}
+\begin{scope}[every node/.style={circle,thick,draw}]
+	\node (P1) at (0,3) {P1};
+	\node (P3) at (2.5,1) {P3};
+	\node (P2) at (5,3) {P2} ;
+	\node (P4) at (0,6) {P4};
+	\node (P5) at (2.5,8) {P5};
+	\node (P6) at (5,6) {P6} ;
+\end{scope}			
+\begin{scope}[>={Stealth[black]},
+every node/.style={fill=white,circle},
+every edge/.style={draw=cyan,very thick}]
+\path [->] (P1) edge[bend left=20] (P2);
+\path [->] (P1) edge[bend left=-20] (P3);
+\path [->] (P1) edge[bend left=0] (P4);
+\path [->] (P2) edge[bend left=20] (P1);
+\path [->] (P2) edge[bend left=20] (P3);
+\path [->] (P2) edge[bend left=0] (P6);
+\path [->] (P4) edge[bend left=0] (P6);
+\path [->] (P4) edge[bend left=0] (P5);
+\path [->] (P5) edge[bend left=20] (P6);
+\path [->] (P6) edge[bend left=0] (P1);
+\path [->] (P6) edge[bend left=20] (P5);
+\end{scope}
+\end{tikzpicture}
+\end{center}
+
+A page is important if it is pointed to by other important pages.
+
+\noindent Let's define PageRank of a page $P_{i}$, denoted $r\left(P_{i}\right)$ and it is the sum of the PageRanks of all pages pointing into $P_{i}$.
+	
+$$
+r\left(P_{i}\right)=\sum_{P_{j} \in B_{P_{i}}} r\left(P_{j}\right)
+$$
+$B_{P_{i}}:$ is the set of pages pointing into $P_{i}$ \\
+\\
+The problem with formula is that the $r(P_{j})$ values, the PageRanks of pages inlinking to page $P_{i}$, are unknown. To sidestep this problem, we are going to use an iterative approach(process). That is, we are assuming that, in the beginning, all pages have equal PageRank (say, $1/n$, here $n$ is the number of web pages). As we are applying the rule in formula successively, we need to introduce some more notation in order to distinguish steps. Let $r_{k}\left(P_{i}\right)$ be the PageRank of page $P_{i}$ at $k^{th}$iteration. Then, PageRank of $P_i$ at $(k+1)^th$ iteration is given by
+	
+$$
+r_{k+1}\left(P_{i}\right)=\sum_{P_{j} \in B_{P_{i}}} r_{k}\left(P_{j}\right)
+$$
+\begin{center}
+\begin{tikzpicture}
+\begin{scope}[every node/.style={circle,thick,draw}]
+\node (P4) at (2.5,3) {P4};
+\node (P2) at (0,5.5) {P2};
+\node (P1) at (2.5,8) {P1};
+\node (P3) at (5,5.5) {P3} ;
+\end{scope}
+			
+\begin{scope}[>={Stealth[black]},
+every node/.style={fill=white,circle},
+every edge/.style={draw=cyan,very thick}]
+\path [->] (P1) edge[bend left=0] (P2);
+				\path [->] (P2) edge[bend left=0] (P4);
+				\path [->] (P2) edge[bend left=0] (P3);
+				\path [->] (P4) edge[bend left=0] (P3);
+				\path [->] (P3) edge[bend left=0] (P1);
+			\end{scope}
+		\end{tikzpicture}
+	\end{center}
+	
+\noindent This process is initiated with $r_{0}\left(P_{i}\right)=1 / n$ for all pages $P_{i}$ and repeated with the hope that the PageRank scores will eventually converge to some final stable values. Applying equation to the above tiny web of 4-nodes gives the following values for the PageRanks after a few iterations.
+\\
+
+\begin{table}[h]
+	\centering
+	\begin{tabular}{l l l c}
+		\toprule
+		\textbf{Iteration 0} & \textbf{Iteration 1} & \textbf{Iteration 2} & \textbf{Iteration 3}\\
+		\midrule
+		$r_{0}\left(P_{1}\right)=1 / 4$ & $r_{1}\left(P_{1}\right)=1 / 4$ & $r_{2}\left(P_{1}\right)=2 / 4$ & 
+		$r_{3}\left(P_{1}\right)=2 / 4$\\
+		$r_{0}\left(P_{2}\right)=1 / 4$ & $r_{1}\left(P_{2}\right)=1 / 4$ & $r_{2}\left(P_{2}\right)=1 / 4$ & 
+		$r_{3}\left(P_{2}\right)=2 / 4$\\
+		$r_{0}\left(P_{3}\right)=1 / 4$ & $r_{1}\left(P_{3}\right)=2 / 4$ & $r_{2}\left(P_{3}\right)=2 / 4$ & 
+		$r_{3}\left(P_{3}\right)=3 / 4$\\
+		$r_{0}\left(P_{4}\right)=1 / 4$ & $r_{1}\left(P_{4}\right)=1 / 4$ & $r_{2}\left(P_{4}\right)=1 / 4$& 
+		$r_{3}\left(P_{4}\right)=1 / 4$\\
+		\bottomrule
+	\end{tabular}
+\end{table}
+
+\noindent From the above table we can say that Page $P_3$ has highest rank and Page $P_4$ has lowest rank.\\
+\\
+\noindent This algorithm can be exploited by SEO's (Search Engine Optimization) by just creating dummy websites and pointing(more formally by giving backlinks) to their clients.\\
+\\
+\noindent This problem can be overcome by little change in previous algorithm.
+
+$$
+r\left(P_{i}\right)=\sum_{P_{j} \in B_{P_{i}}} \frac{r\left(P_{j}\right)}{\left|P_{j}\right|}
+$$
+$B_{P_{i}}:$ is the set of pages pointing into $P_{i}$ \\
+$|P_{j}|:$ is the number of outlinks from page $P_{j}$.\\
+\\
+Recursive formula:
+$$
+r_{k+1}\left(P_{i}\right)=\sum_{P_{j} \in B_{P_{i}}} \frac{r_{k}\left(P_{j}\right)}{\left|P_{j}\right|} .
+$$
+
+\noindent Now, unlike previous algorithm dummy websites have no use as their value of backlinks decreases as the number of backlinks increase.
+
+\begin{center}
+	\begin{tikzpicture}
+		\begin{scope}[every node/.style={circle,thick,draw}]
+			\node (P1) at (0,3) {P1};
+			\node (P3) at (2.5,1) {P3};
+			\node (P2) at (5,3) {P2} ;
+			\node (P4) at (0,6) {P4};
+			\node (P5) at (2.5,8) {P5};
+			\node (P6) at (5,6) {P6} ;
+		\end{scope}
+		\begin{scope}[>={Stealth[black]},
+			every node/.style={fill=white,circle},
+			every edge/.style={draw=cyan,very thick}]
+			\path [->] (P1) edge[bend left=20] (P2);
+			\path [->] (P1) edge[bend left=-20] (P3);
+			\path [->] (P1) edge[bend left=0] (P4);
+			\path [->] (P2) edge[bend left=20] (P1);
+			\path [->] (P2) edge[bend left=20] (P3);
+			\path [->] (P2) edge[bend left=0] (P6);
+			\path [->] (P4) edge[bend left=0] (P6);
+			\path [->] (P4) edge[bend left=0] (P5);
+			\path [->] (P5) edge[bend left=20] (P6);
+			\path [->] (P6) edge[bend left=0] (P1);
+			\path [->] (P6) edge[bend left=20] (P5);
+		\end{scope}
+	\end{tikzpicture}
+\end{center}
+	
+Let's calculate PageRank using updated algorithm,
+	
+\begin{table}[h]
+	\centering
+	\begin{tabular}{l l l c}
+		\toprule
+	\textbf{Iteration 0} & \textbf{Iteration 1} & \textbf{Iteration 2} & \textbf{PageRank}\\
+		\midrule
+		$r_{0}\left(P_{1}\right)=1 / 6$ & $r_{1}\left(P_{1}\right)=5 / 36$ & $r_{2}\left(P_{1}\right)=37 / 216$ & 3 \\
+		$r_{0}\left(P_{2}\right)=1 / 6$ & $r_{1}\left(P_{2}\right)=2 / 36$ & $r_{2}\left(P_{2}\right)=10 / 216$ & 5 \\
+		$r_{0}\left(P_{3}\right)=1 / 6$ & $r_{1}\left(P_{3}\right)=4 / 36$ & $r_{2}\left(P_{3}\right)=14 / 216$ & 4 \\
+		$r_{0}\left(P_{4}\right)=1 / 6$ & $r_{1}\left(P_{4}\right)=2 / 36$ & $r_{2}\left(P_{4}\right)=10 / 216$ & 5 \\
+		$r_{0}\left(P_{5}\right)=1 / 6$ & $r_{1}\left(P_{5}\right)=6 / 36$ & $r_{2}\left(P_{5}\right)=39 / 216$ & 2 \\
+		$r_{0}\left(P_{6}\right)=1 / 6$ & $r_{1}\left(P_{6}\right)=11 / 36$ & $r_{2}\left(P_{6}\right)=46 / 216$ & 1\\			\bottomrule
+		\end{tabular}
+\end{table}
