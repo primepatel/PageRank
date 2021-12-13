@@ -1,0 +1,271 @@
+\section{Matrix Representation}
+
+Equation compute PageRank one page at a time. Using matrices, we replace the tedious $\sum$ symbol, and at each iteration, compute a PageRank vector, which uses a single $1 \times n$ vector to hold the PageRank values for all pages in the index. In order to do this, we introduce an $n \times n$ matrix $\mathbf{H}$ and a $1 \times n$ row vector ${\pi}^{T}\geq0$ (probability vector i.e. all entries are non-negative real number with sum equal to 1). The matrix $\mathbf{H}$ is a row normalized hyperlink matrix with $\mathbf{H}_{i j}=1 /\left|P_{i}\right|$ if there is a link from node $i$ to node $j$, and 0 otherwise.
+	
+\begin{center}
+	\begin{tikzpicture}
+		\begin{scope}[every node/.style={circle,thick,draw}]
+			\node (P1) at (0,3) {P1};
+			\node (P3) at (2.5,1) {P3};
+			\node (P2) at (5,3) {P2} ;
+			\node (P4) at (0,6) {P4};
+			\node (P5) at (2.5,8) {P5};
+			\node (P6) at (5,6) {P6} ;
+		\end{scope}
+	\begin{scope}[>={Stealth[black]},
+			every node/.style={fill=white,circle},
+			every edge/.style={draw=cyan,very thick}]
+			\path [->] (P1) edge[bend left=20] node {$1/3$} (P2);
+			\path [->] (P1) edge[bend left=-20] node {$1/3$} (P3);
+			\path [->] (P1) edge[bend left=0] node {$1/3$}(P4);
+			\path [->] (P2) edge[bend left=20] node {$1/3$} (P1);
+			\path [->] (P2) edge[bend left=20] node {$1/3$} (P3);
+			\path [->] (P2) edge[bend left=0] node {$1/3$} (P6);				\path [->] (P4) edge[bend left=0] node {$1/2$} (P6);
+			\path [->] (P4) edge[bend left=0] node {$1/2$} (P5);
+			\path [->] (P5) edge[bend left=20] node {$1$} (P6);
+			\path [->] (P6) edge[bend left=0] node {$1/2$} (P1);
+			\path [->] (P6) edge[bend left=20] node {$1/2$} (P5);
+		\end{scope}
+	\end{tikzpicture}
+\end{center}
+	
+\noindent Transition Matrix:
+
+$$
+\begin{array}{ccccccc} 
+	& P_{1} & P_{2} & P_{3} & P_{4} & P_{5} & P_{6} \\
+	P_{1} & 0 & 1 / 3 & 1 / 3 & 1 / 3 & 0 & 0 \\
+	P_{2} & 1 / 3 & 0 & 1 / 3 & 0 & 0 & 1 / 3 \\
+	P_{3} & 0 & 0 & 0 & 0 & 0 & 0 \\
+	P_{4} & 0 & 0 & 0 & 0 & 1 / 2 & 1 / 2 \\
+	P_{5} & 0 & 0 & 0 & 0 & 0 & 1 \\
+	P_{6} & 1 / 2 & 0 & 0 & 0 & 1 / 2 & 0
+\end{array}
+$$
+
+\noindent Consider last 6-node tiny web again. The $\mathbf{H}$ matrix for this graph is
+
+$$
+\mathbf{H}=\left[\begin{array}{cccccc}
+	0 & 1 / 3 & 1 / 3 & 1 / 3 & 0 & 0 \\
+	1 / 3 & 0 & 1 / 3 & 0 & 0 & 1 / 3 \\
+	0 & 0 & 0 & 0 & 0 & 0 \\
+	0 & 0 & 0 & 0 & 1 / 2 & 1 / 2 \\
+	0 & 0 & 0 & 0 & 0 & 1 \\
+	1 / 2 & 0 & 0 & 0 & 1 / 2 & 0
+\end{array}\right]
+$$
+
+$${\pi}^{(k+1) T}={\pi}^{(k) T} \mathbf{H}$$
+
+\noindent H is a very sparse matrix (a large proportion of its elements are 0) because most webpages link to few of other pages. ${\pi}^{(0)T}$ will be row probability vector with all entries $1/n$.
+
+\begin{thm}[Stochastic matrix]{thm:stochasticmatrix}
+A $n\times n$ Matrix A is said to be row(right) stochastic matrix if
+$$
+A=\left[\begin{array}{cccccc}
+	a_{1,1} & a_{1,2} & \ldots & a_{1, j} & \ldots & a_{1, n} \\
+	a_{2,1} & a_{2,2} & \ldots & a_{2, j} & \ldots & a_{2, n} \\
+	\vdots & \vdots & \ddots & \vdots & \ddots & \vdots \\
+	a_{i, 1} & a_{i, 2} & \ldots & a_{i, j} & \ldots & a_{i, n} \\
+	\vdots & \vdots & \ddots & \vdots & \ddots & \vdots \\
+	a_{n, 1} & a_{n, 2} & \ldots & a_{n, j} & \ldots & a_{n, n}
+    \end{array}\right]
+$$
+
+$$\sum_{j=1}^{n} a_{i, j}=1$$  \centering $i = 1, 2, ..., n$
+\end{thm}
+
+\noindent H looks a lot like a stochastic transition probability matrix for a Markov chain.
+The dangling nodes of the network, those nodes with no outlinks, create 0 rows in
+the matrix. All the other rows, which correspond to the nondangling nodes, create
+stochastic rows. Thus, We can call H as substochastic.\\
+
+\noindent Problem with iterative process iterative equation probably caused readers, especially our mathematical readers, to ask several questions. For example,
+
+\begin{itemize}
+	\item Will this iterative process continue indefinitely or will it converge?
+	\item Under what circumstances or properties of H is it guaranteed to converge?
+	\item Will it converge to something that makes sense in the context of the PageRank problem?
+	\item Will it converge to just one vector or multiple vectors?
+	\item Does the convergence depend on the starting vector $\pi^{(0)T}$ ?
+\end{itemize}
+	
+\subsection{Reducibility}
+	
+There is the problem of rank sinks, those pages that accumulate more and more PageRank at each iteration, monopolizing the scores and refusing to share. Consider the following 3-node graph,
+
+\begin{center}
+	\begin{tikzpicture}
+		\begin{scope}[every node/.style={circle,thick,draw}]
+			\node (P1) at (0,3) {P1};
+			\node (P3) at (2.5,1) {P3};
+			\node (P2) at (5,3) {P2} ;
+		\end{scope}
+	
+		\begin{scope}[>={Stealth[black]},
+			every node/.style={fill=white,circle},
+			every edge/.style={draw=cyan,very thick}]
+			\path [->] (P1) edge[bend left=20] node {$1/2$} (P2);
+			\path [->] (P2) edge[bend left=20] node {$1/2$} (P1);
+			\path [<-] (P3) edge[bend left=20] node {$1/2$} (P1);
+			\path [<-] (P3) edge[bend left=-20] node {$1/2$} (P2);
+		\end{scope}
+	\end{tikzpicture}	
+\end{center}
+
+\begin{table}[h]
+	\centering
+	\begin{tabular}{l l l c}
+		\toprule
+		\textbf{Iteration 0} & \textbf{Iteration 1} & \textbf{Iteration 2} & \textbf{Iteration 3}\\
+		\midrule
+		$r_{0}\left(P_{1}\right)=1 / 3$ & $r_{1}\left(P_{1}\right)=1 / 6$ & $r_{2}\left(P_{1}\right)=1 / 12$ & 
+		$r_{2}\left(P_{1}\right)=1 / 24$\\
+		$r_{0}\left(P_{2}\right)=1 / 3$ & $r_{1}\left(P_{2}\right)=1 / 6$ & $r_{2}\left(P_{2}\right)=1 / 12$ & 
+		$r_{2}\left(P_{2}\right)=1 / 24$\\
+		$r_{0}\left(P_{3}\right)=1 / 3$ & $r_{1}\left(P_{3}\right)=1 / 3$ & $r_{2}\left(P_{3}\right)=1 / 6$ & 
+		$r_{2}\left(P_{3}\right)=1 / 12$\\
+		\bottomrule
+	\end{tabular}	
+\end{table}
+
+\noindent Here, $\displaystyle \lim_{k\to \infty}{\pi}^{(0)T}\mathbf{H}^k = 0^T$
+In the simple example of 3-node graph, the dangling node $P_3$ is causing rank sink forcing all PageRank approaching to 0. Thus, ranking pages by their PageRank values is tough when a majority of the nodes are tied with PageRank 0. Ideally, we prefer the PageRank vector should converge to positive probability vector.\\
+
+\begin{thm}[Reducible Matrix]{thm:reduciblematrix}
+	A matrix is reducible if and only if it can be placed into block upper-triangular form by simultaneous row/column permutations.\\
+	\\A square matrix that is not reducible is said to be irreducible.
+\end{thm}
+
+\noindent Rank Sink is caused by the reduciblity of transition matrix H.
+
+\subsection{Periodicity}
+\noindent Consider the simplest case of 2-node. Page 1 only points to page 2 and vice versa, creating an infinite loop or cycle.
+\begin{center}
+	\begin{tikzpicture}
+		\begin{scope}[every node/.style={circle,thick,draw}]
+			\node (P1) at (0,3) {P1};
+			\node (P2) at (5,3) {P2} ;
+		\end{scope}
+		
+		\begin{scope}[>={Stealth[black]},
+			every node/.style={fill=white,circle},
+			every edge/.style={draw=cyan,very thick}]
+			\path [->] (P1) edge[bend left=20] node {$1$} (P2);
+			\path [->] (P2) edge[bend left=20] node {$1$} (P1);
+		\end{scope}
+	\end{tikzpicture}
+\end{center}
+	
+\noindent Suppose the iterative process of equation is run with $\pi^{(0) T}=\left(\begin{array}{ll}0.25 & 0.75\end{array}\right)$. The iterates will not converge no matter how long the process is run. The iterates ${\pi}^{(k) T}$ flip-flop indefinitely between ( $\left.\begin{array}{ll}0.25 & 0.75\end{array}\right)$ when $k$ is even and $\left(\begin{array}{ll}0.75 & 0.25\end{array}\right)$ when $k$ is odd.\\
+
+\begin{thm}[Eigen Values And Eigen Vectors]{thm:eigen}
+	For a matrix $\mathbf{A} \in \mathbb{C}^{n \times n}$, the scalars $\lambda$ and the vectors $\mathbf{x}_{n \times 1} \neq \mathbf{0}$ satisfying $\mathbf{A x}=\lambda \mathbf{x}$ are the respective eigenvalues and eigenvectors for $\mathbf{A}$. A row vector $\mathbf{y}^{T}$ is a left-hand eigenvector if $\mathbf{y}^{T} \mathbf{A}=\lambda \mathbf{y}^{T}$.
+\end{thm}
+
+\noindent For the above 2-node simple web, it's matrix has eigenvalues 1 \& -1 which are of same magnitude.
+\begin{thm}[Spectrum And Spectrum Radius]{thm:spectrum}
+	\noindent The set $\sigma(\mathbf{A})$ of distinct eigenvalues is called the spectrum of $\mathbf{A}$, and the spectral radius of $\mathbf{A}$ is the nonnegative number
+    $$
+	\rho(\mathbf{A})=\max _{\lambda \in \sigma(\mathbf{A})}|\lambda| .
+	$$
+	\noindent The circle in the complex plane that is centered at the origin and has radius $\rho(\mathbf{A})$ is called the spectral circle
+\end{thm}
+	
+\begin{thm}[Periodic Matrix]{thm:periodicmatrix}
+	\noindent A square matrix A such that the matrix power $A^{k+1} = A$ for some positive integer k, is called a periodic matrix. If k is least such integer, then the matrix is said to have period k. For k = 1 A is idempotent.
+\end{thm}
+
+\noindent If matrix is not periodic then it is aperiodic(k=0).
+Note: k+1 eigen-values lie on the spectral circle.
+	
+\noindent Periodicity of the transition matrix H is resulting in problem of cycle.\\
+\\
+\noindent Therefore, the PageRank convergence problems caused by sinks and cycles can be overcome if H is modified slightly so that it is a Markov matrix with these desired properties to get desired output. Further, If our Google matrix some how become aperiodic then we can get PageRank vector just by applying power method with iteration formula regardless of the starting probability vector.
+
+\noindent Now, we know that for any starting probability vector, the power method applied to a Markov matrix M converges to a unique positive vector called the stationary vector as long as P is stochastic, irreducible, and aperiodic.
+
+\subsection{Stochasticity Adjustment}
+\noindent Imagine a web surfer who bounces along randomly following the hyperlink structure of the Web. In the long run, the proportion of time the random surfer spends on a given page is a measure of the relative importance of that page. That is, when he arrives at a page with several outlinks, he chooses one at random, hyperlinks to this new page, and continues this random decision process indefinitely. This random surfer encounters some problems. He gets caught whenever he enters a dangling node. And on the Web there are plenty of nodes dangling, e.g., pdf files, image files, data tables, etc.
+
+\noindent The $0^T$ rows of H are replaced with 1/n $e^T$ , thereby making H stochastic. As a result, the random surfer, after entering a dangling node, can now hyperlink to any page at random.\\
+
+\noindent For the tiny 6-node web, Our transition matrix H can be made stochastic matrix called S by simply making RankOne update to H
+
+$$
+\mathbf{S}=\left[\begin{array}{cccccc}
+	0 & 1 / 3 & 1 / 3 & 1 / 3 & 0 & 0 \\
+	1 / 3 & 0 & 1 / 3 & 0 & 0 & 1 / 3 \\
+	1/6 & 1/6 & 1/6 & 1/6 & 1/6 & 1/6 \\
+	0 & 0 & 0 & 0 & 1 / 2 & 1 / 2 \\
+	0 & 0 & 0 & 0 & 0 & 1 \\
+	1 / 2 & 0 & 0 & 0 & 1 / 2 & 0
+	\end{array}\right]
+$$
+
+\noindent For any transition matrix H, stochastic matrix S can be calculated using following formula\\
+$$\mathbf{S}=\mathbf{H}+\mathbf{a}\left(1 / n \mathbf{e}^{T}\right)$$
+where $\mathbf{e}^{T}$ is row vector with all entries 1\\
+\noindent $\mathbf{a}$ is binary column vector called dangling node vector.\\
+Entries of $\mathbf{a}$, $a_{i}=1$ if page $i$ is a dangling node and 0 otherwise.
+\\
+\noindent This adjustment guarantees that $\mathbf{S}$ is stochastic, and thus, is the transition probability matrix for a Markov chain. However, it alone cannot guarantee the convergence results we desired. (That is, that a unique positive $\pi^{T}$ exists) 
+
+\subsection{Primitivity Adjustment}
+
+A primitive matrix is both irreducible and aperiodic. Thus, the PageRank vector of the chain exists, is unique, and can be found by a simple power iteration.\\
+\begin{thm}[Positive Matrix]{thm:positivematrix}
+	A matrix $P$ is positive if every entry is positive, we write $P>0$ and matrix $P$ is nonnegative if every entry is zero or positive, we write $P \geq 0$.\\
+	Primitive Matrix: A square non-negative real matrix $P$ is said to be primitive if there exists a positive integer $k$ such that $P^{k}>0$.
+\end{thm}
+
+\noindent The random surfer argument for the primitivity adjustment goes like this. While it is true that surfers follow the hyperlink structure of the Web, at times they get bored and abandon the hyperlink method of surfing by entering a new destination in the browser's URL line. When this happens, the random surfer, like a Star Trek character, "teleports" to the new page, where he begins hyperlink surfing again, until the next teleportation, and so on.\\
+\\
+To model this mathematically, consider new matrix $\mathbf{G}$, such that
+$$
+\mathbf{G}=\alpha \mathbf{S}+(1-\alpha) 1 / n \mathbf{e e}^{T},
+$$
+where $\alpha$ is a scalar between 0 and 1. $\mathrm{G}$ is called the Google matrix. In this model, $\alpha$ is a parameter that controls the proportion of time the random surfer follows the hyperlinks as opposed to teleporting. Suppose $\alpha=0.8$. Then $80 \%$ of the time the random surfer follows the hyperlink structure of the Web and the other $20 \%$ of the time he teleports to a random new page. The teleporting is random because the teleportation matrix $\mathbf{E}=1 / n$ ee $^{T}$ is uniform, meaning the surfer is equally likely, when teleporting, to jump to any page.
+\\
+\\
+There are several consequences of the primitivity adjustment:\\
+\\
+Matrix G is the convex combination of the two stochastic matrices $\mathbf{S}$ and $\mathbf{E}=1 / n \mathbf{e e}^{T}$ hence it is stochastic.\\
+\\
+\begin{thm}[Norm]{thm:norm}
+	In the applications involving PageRank and Markov chains, it's more natural (and convenient) to use the vector 1 -norm defined by
+	$$
+	\|\mathbf{x}\|_{1}=\sum_{i=1}^{n}\left|x_{i}\right|
+	$$
+\end{thm}
+
+\begin{thm}[Perron-Frobenius Theorem]{thm:perronthm}
+	If $\mathbf{A}_{n \times n} \geq \mathbf{0}$ is irreducible, then each of the following is true.\\
+	1. $r=\rho(\mathbf{A})>0$.\\
+	2. $r \in \sigma(\mathbf{A}) \quad(r$ is the Perron root $)$.\\
+	3. alg mult $_{\mathbf{A}}(r)=1$. (the Perron root is simple).\\
+	4. There exists an eigenvector $\mathbf{x}>\mathbf{0}$ such that $\mathbf{A} \mathbf{x}=r \mathbf{x}$.\\
+	5. The Perron vector is the unique vector defined by
+	$$
+	\mathbf{A p}=r \mathbf{p}, \quad \mathbf{p}>\mathbf{0},\|\mathbf{p}\|_{1}=1,
+	$$
+	and, except for positive multiples of $\mathbf{p}$, there are no other nonnegative eigenvectors for $\mathbf{A}$, regardless of the eigenvalue.\\
+	6. $r$ need not be the only eigenvalue on the spectral circle of $\mathbf{A}$.
+\end{thm}
+
+\noindent $\mathrm{G}$ is primitive because $\mathrm{G}^{k}>0$ for some $k$. (In fact, this holds for $k=1 .$ ) G is irreducible as well as aperiodic. G is primitive so irreducibility and aperiodicity are trivially enforced. By Perron-Frobenius Theorem there exists a unique positive probability vector $\pi^{T}$ exists, and it can be obtained by applying power method to $\mathrm{G}$.
+
+\noindent $\mathrm{G}$ is completely dense, which is a very bad thing, computationally. Fortunately, $\mathrm{G}$ can be written as a rank-one update to the very sparse hyperlink matrix $\mathbf{H}$. This is computationally advantageous.
+$$
+\begin{aligned}
+	\mathbf{G} &=\alpha \mathbf{S}+(1-\alpha) 1 / n \mathbf{e e}^{T} \\
+	&=\alpha\left(\mathbf{H}+1 / n \mathbf{a e}^{T}\right)+(1-\alpha) 1 / n \mathbf{e e}^{T} \\
+	&=\alpha \mathbf{H}+(\alpha \mathbf{a}+(1-\alpha) \mathbf{e}) 1 / n \mathbf{e}^{T} .
+\end{aligned}
+$$
+In summary, Google's adjusted PageRank method is
+$$
+\boldsymbol{\pi}^{(k+1) T}=\boldsymbol{\pi}^{(k) T} \mathbf{G},
+$$
+which is simply the power method applied to $\mathrm{G}$.
