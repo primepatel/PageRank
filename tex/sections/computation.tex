@@ -1,0 +1,119 @@
+\section{COMPUTATION OF THE PAGERANK VECTOR}
+
+The PageRank problem can be stated in two ways:\\
+\noindent 1. Solve the following eigenvector problem for $\pi^{T}$.
+$$
+\begin{array}{r}
+	\pi^{T}=\pi^{T} \mathrm{G}, \\
+	\pi^{T} \mathrm{e}=1 .
+\end{array}
+$$
+\noindent 2. Solve the following linear homogeneous system for $\pi^{T}$.
+$$
+\begin{aligned}
+	\pi^{T}(\mathbf{I}-\mathbf{G}) &=\mathbf{0}^{T} \\
+	\pi^{T} \mathbf{e} &=1 .
+\end{aligned}
+$$
+
+\noindent In the first system, the goal is to find the normalized dominant lefi-hand eigenvector of $\mathrm{G}$ corresponding to the dominant eigenvalue $\lambda_{1}=1 .\left(\mathrm{G}\right.$ is a stochastic matrix, so $\left.\lambda_{1}=1 .\right)$ In the second system, the goal is to find the normalized left-hand null vector of $\mathbf{I}-\mathbf{G}$. Both systems are subject to the normalization equation $\pi^{T} e=1$, which insures that $\pi^{T}$ is a probability vector.
+	
+\noindent Returning again to 6-node graph, for $\alpha=0.9$,
+	
+$$
+\begin{aligned}
+	\mathbf{G}=0.9 \mathbf{H}+\left(0.9\left(\begin{array}{l}
+		0 \\
+		1 \\
+		0 \\
+		0 \\
+		0 \\
+		0
+\end{array}\right)+0.1\left(\begin{array}{l}
+		1 \\
+		1 \\
+		1 \\
+		1 \\
+		1 \\
+		1
+\end{array}\right)\right) 1 / 6\left(\begin{array}{llllll}
+		1 & 1 & 1 & 1 & 1
+		\end{array}\right) \\
+		=\left(\begin{array}{cccccc}
+		1 / 60 & 19 / 60 & 19 / 60 & 19 / 60 & 1 / 60 & 1 / 60 \\
+		19 / 60 & 1 / 60 & 19 / 60 & 1 / 60 & 1 / 60 & 19 / 60 \\
+		1 / 6 & 1 / 6 & 1 / 6 & 1 / 6 & 1 / 6 & 1 / 6 \\
+		1 / 60 & 1 / 60 & 1 / 60 & 1 / 60 & 7 / 15 & 7 / 15 \\
+		1 / 60 & 1 / 60 & 1 / 60 & 7 / 15 & 1 / 60 & 11 / 15 \\
+		7 / 15 & 1 / 60 & 1 / 60 & 1 / 60 & 7 / 15 & 1 / 60
+    \end{array}\right) .
+\end{aligned}
+$$
+
+
+\noindent Google's PageRank vector is the stationary vector of $\mathrm{G}$ and is given by
+$$
+\pi^{T}=\left(\begin{array}{cccccc}
+	P_1 & P_2 & P_3 & P_4 & P_5 & P_6 \\
+	0.1939 & 0.09295 & 0.1208 & 0.09295 & 0.2078 & 0.2915
+\end{array}\right) .
+$$
+
+\noindent The interpretation of $\pi_{1}=0.1939$ is that $19.39 \%$ of the time the random surfer visits $P_1$. Therefore, the pages in tiny 6-node web can be ranked by their importance as ($\begin{matrix}
+3 & 5 & 4 & 5 & 2 & 1
+\end{matrix}$), meaning $P_6$ is the most important page and $P_2$ \& $P_4$ are the least important page, according to the PageRank definition of importance.\\
+
+
+\noindent However, for a web-sized matrix like Google's, solving eigenvalue-eigenvector problem is not possible.  For Google,
+n = 8.1 billion, so one can understand their gigantic size when it comes to storage.
+%	Other iterative methods, such as GMRES or BICGSTAB, while faster, require the storage
+%	of multiple vectors. 
+The power method is one of the oldest and simplest iterative methods for finding the dominant eigenvalue and eigenvector of a matrix. However, the power method is known for its tortoise-like speed.
+
+\noindent There are several good reasons for their choice.
+
+\noindent Modifying and storing elements of the Google matrix is not feasible. %Even though H is very sparse, its enormous size and lack of structure preclude the use of direct methods. 
+Instead, matrix-free methods, such as the class of iterative methods, are preferred. First, the power method is simple. The implementation and programming are elementary. In addition, the power method applied to $\mathrm{G}$  can actually be expressed in terms of the very sparse $\mathbf{H}$.
+$$
+\begin{aligned}
+	\boldsymbol{\pi}^{(k+1) T} &=\boldsymbol{\pi}^{(k) T} \mathbf{G} \\
+	&=\alpha \boldsymbol{\pi}^{(k) T} \mathbf{S}+\frac{1-\alpha}{n} \boldsymbol{\pi}^{(k) T} \mathbf{e} \mathbf{e}^{T} \\
+	&=\alpha \boldsymbol{\pi}^{(k) T} \mathbf{H}+\left(\alpha \boldsymbol{\pi}^{(k) T} \mathbf{a}+1-\alpha\right) \mathbf{e}^{T} / n .
+	\end{aligned}
+$$
+	
+\noindent The vector-matrix multiplications $\left(\boldsymbol{\pi}^{(k) T} \mathbf{H}\right)$ are executed on the extremely sparse $\mathbf{H}$, and $\mathbf{S}$ and $\mathbf{G}$ are never formed or stored, only their rank-one components, a and $\mathbf{e}$, are needed.\\
+	
+\begin{thm}[]{}
+	Given probability vector $\pi^{(0)T}>0$ and stochastic matrix G then $\pi^{(k)T}>0$ is also probability vector for all positive integers.
+\end{thm}
+	
+\noindent We know till now that the sequence of PageRank Vector $(\boldsymbol{\pi}^{(k)})$ is convergent and each term of the sequence is probability vector.
+	
+\noindent For page ranking precision up to 3-4 decimal places is enough as PageRank is finally combined with the content and popularity index. Now, how many iteration do we need to get desired precision?
+	
+\begin{thm}[Generalized Google Matrix]{thm:googlematrix}
+	We defined the Google matrix as $\mathbf{G}=\alpha \mathbf{S}+(1-\alpha) 1 / n \mathbf{e e}^{T}$. However, we broaden this to include a more general Google matrix, where the fudge factor matrix $\mathbf{E}$ changes from the uniform matrix $\frac{1}{n} \mathbf{e e}^{T}$ to $\mathbf{e v}^{T}$, where $\mathbf{v}^{T}>\mathbf{0}$ is a probability vector.
+\end{thm}
+	
+\noindent The answer comes from the theory of Markov chains. In general, the asymptotic rate of convergence of the power method applied to a matrix depends on the ratio of the two eigenvalues that are largest in magnitude, denoted $\lambda_{1}$ and $\lambda_{2}$. 
+
+\begin{thm}[]{}
+If the spectrum of the stochastic matrix $\mathbf{S}$ is $\left\{1, \lambda_{2}, \lambda_{3}, \ldots, \lambda_{n}\right\}$, then the spectrum of the Google matrix $\mathbf{G}=\alpha \mathbf{S}+(1-\alpha) \mathbf{e v}^{T}$ is $\left\{1, \alpha \lambda_{2}, \alpha \lambda_{3}, \ldots, \alpha \lambda_{n}\right\}$, where $\mathbf{v}^{T}$ is a probability vector.
+\end{thm}
+	
+\noindent Precisely, the asymptotic convergence rate is the rate at which $\left|\lambda_{2} / \lambda_{1}\right|^{k} \rightarrow 0$. For stochastic matrices such as $\mathbf{G}, \lambda_{1}=1$, so $\left|\lambda_{2}\right|$ governs the convergence. Since $\mathbf{G}$ is also primitive, $\left|\lambda_{2}\right|<1$. In general, numerically finding $\lambda_{2}$ for a matrix requires computational effort that one is not willing to spend just to get an estimate of the asymptotic rate of convergence.\\
+	
+\begin{thm}[Subdominant Eigen Value]{thm:subdominanteigen}
+	Norm of subdominant Eigenvalue of the Google Matrix
+	For the Google matrix $\mathbf{G}=\alpha \mathbf{S}+(1-\alpha) 1 / n \mathbf{e e}^{T}$,
+	$$
+	\alpha||\lambda_{2}|| \leq \alpha .
+	$$
+	\\
+Therefore, the asymptotic rate of convergence of the PageRank power method of equation is the rate at which $(\alpha||\lambda_{2}||)^{k} \rightarrow 0$.
+\end{thm}
+	
+\noindent Furthermore, the link structure of the Web makes it very likely that $\left|\lambda_{2}(\mathbf{G})\right| \approx \alpha$. As a result, convergence of PageRank vector depend upon parameter $\alpha$. Google founders Brin and Page use $\alpha=.85$, and at last report, this is still the value used by Google. $\alpha^{50}=.85^{50} \approx .000296$, which implies that at the 50th iteration one can expect roughly 3-4 places of accuracy in the approximate PageRank vector. This degree of accuracy is apparently adequate for Google's ranking needs. Mathematically, ten places of accuracy may he needed to distinguish between elements of the PageRank vector, but when PageRank scores are combined with content and popularity score, high accuracy may be less important. Thus, now we are able to calculate PageRank for any graph weather it is of order 10s or 1Billions.\\
+\\
+\noindent Google's PageRank algorithm is in use from early 90s, so as time goes, most likely traditional method going to fade forcing mathematicians to work on newer methods for calculating PageRank.
